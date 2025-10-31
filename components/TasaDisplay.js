@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function TasaDisplay({ onTasaChange }) {
   const [tasa, setTasa] = useState(null);
@@ -94,13 +94,12 @@ export default function TasaDisplay({ onTasaChange }) {
     <div className="tasa-display">
       <h2>Tipo de Cambio USD</h2>
       <div className="tasa-valor-container">
-        <div className="tasa-valor">{tasa.valor} Bs</div>
-        <button
-          onClick={copiarTasa}
-          className="btn-copiar"
-          title="Copiar tasa"
-        >
-          {copiado ? "✓ Copiado" : "📋 Copiar"}
+        <div className="tasa-valor-group">
+          <span className="tasa-numero">{tasa.valor}</span>
+          <span className="tasa-unidad">Bs</span>
+        </div>
+        <button onClick={copiarTasa} className="btn-copiar" title="Copiar tasa">
+          {copiado ? "✓" : "📋"}
         </button>
       </div>
       <div className="tasa-fecha">{fechaFormateada}</div>
@@ -122,4 +121,3 @@ export default function TasaDisplay({ onTasaChange }) {
     </div>
   );
 }
-

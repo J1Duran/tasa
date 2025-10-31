@@ -78,17 +78,30 @@ body {
   letter-spacing: 0.05em;
 }
 
-.tasa-display .tasa-valor {
-  font-size: 2rem;
-  font-weight: 700;
+.tasa-valor-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
   margin-bottom: 0.25rem;
-  padding-right: 120px;
+  flex-wrap: wrap;
 }
 
-.tasa-valor-container {
-  position: relative;
-  display: inline-block;
-  width: 100%;
+.tasa-valor-group {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.tasa-display .tasa-numero {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.tasa-display .tasa-unidad {
+  font-size: 1.5rem;
+  font-weight: 600;
+  opacity: 0.9;
 }
 
 .tasa-display .tasa-fecha {
@@ -237,18 +250,21 @@ body {
 }
 
 .btn-copiar {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.75rem;
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 6px;
   color: white;
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 1rem;
   transition: all 0.2s;
   backdrop-filter: blur(4px);
+  flex-shrink: 0;
+  min-width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-copiar:hover {
@@ -338,16 +354,23 @@ body {
     font-size: 1.5rem;
   }
 
-  .tasa-display .tasa-valor {
+  .tasa-display .tasa-numero {
     font-size: 1.75rem;
-    padding-right: 100px;
+  }
+
+  .tasa-display .tasa-unidad {
+    font-size: 1.25rem;
   }
 
   .btn-copiar {
-    font-size: 0.75rem;
-    padding: 0.4rem 0.8rem;
-    top: 0.25rem;
-    right: 0.25rem;
+    font-size: 0.875rem;
+    padding: 0.4rem 0.6rem;
+    min-width: 40px;
+    height: 40px;
+  }
+
+  .tasa-valor-container {
+    gap: 0.5rem;
   }
 
   .btn-copiar-resultado {
