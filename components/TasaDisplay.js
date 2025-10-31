@@ -64,15 +64,18 @@ export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
   }
 
   const copyRate = async () => {
+    // Format for clipboard: replace dots with nothing, keep comma for decimals
+    const copyValue = rate.valor.replace(/\./g, "");
+    
     try {
-      await navigator.clipboard.writeText(rate.valor);
+      await navigator.clipboard.writeText(copyValue);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error("Error copying:", err);
       // Fallback for older browsers
       const textArea = document.createElement("textarea");
-      textArea.value = rate.valor;
+      textArea.value = copyValue;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand("copy");

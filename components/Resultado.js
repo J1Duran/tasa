@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 
-export default function Resultado({ resultado }) {
+export default function Resultado({
+  resultado,
+  moneda,
+  onNavigateToCalculator,
+}) {
   const [copied, setCopied] = useState(false);
 
   if (!resultado) return null;
@@ -15,16 +19,20 @@ export default function Resultado({ resultado }) {
   };
 
   const copyTotal = async () => {
+    // Format for display
     const formattedTotal = formatNumber(resultado.totalBolivares);
+    // Format for clipboard: replace dots with nothing, keep comma for decimals
+    const copyValue = formattedTotal.replace(/\./g, "");
+
     try {
-      await navigator.clipboard.writeText(formattedTotal);
+      await navigator.clipboard.writeText(copyValue);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error("Error copying:", err);
       // Fallback for older browsers
       const textArea = document.createElement("textarea");
-      textArea.value = formattedTotal;
+      textArea.value = copyValue;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand("copy");
@@ -96,6 +104,17 @@ export default function Resultado({ resultado }) {
           </div>
         </div>
       </div>
+
+      {/* Show "Ver USDT" button only for USDT tab */}
+      {moneda === "USD" && onNavigateToCalculator && (
+        <button
+          onClick={() => onNavigateToCalculator(resultado.totalBolivares)}
+          className="btn btn-primary"
+          style={{ marginTop: "1rem", width: "100%" }}
+        >
+          ₮ Ver USDT Necesarios
+        </button>
+      )}
     </div>
   );
 }

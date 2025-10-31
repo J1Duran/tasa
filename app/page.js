@@ -41,8 +41,9 @@ export default function Home() {
       setError(null);
     } else {
       setResult(null);
+      // Don't clear precioCalc here - it might have been set by onNavigateToCalculator
+      // Only clear calcResult when entering CALC tab
       setCalcResult(null);
-      setPrecioCalc("");
       setError(null);
     }
   }, [activeCurrency]);
@@ -154,6 +155,13 @@ export default function Home() {
     setError(null);
   };
 
+  // Handler for changing currency in calculator tab
+  const handleMonedaCalcChange = (newMoneda) => {
+    setMonedaCalc(newMoneda);
+    setPrecioCalc("");
+    setCalcResult(null);
+  };
+
   const isCalculatorTab = activeCurrency === "CALC";
 
   return (
@@ -224,7 +232,22 @@ export default function Home() {
               </button>
             )}
 
-            <Resultado resultado={result} />
+            <Resultado 
+              resultado={result} 
+              moneda={activeCurrency}
+              onNavigateToCalculator={(monto) => {
+                setActiveCurrency("CALC");
+                setMonedaCalc("Bs");
+                // Format number properly: use Spanish format and remove thousand separators
+                const formatted = new Intl.NumberFormat("es-VE", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(monto);
+                // Remove dots (thousand separators), keep comma (decimal)
+                const formattedMonto = formatted.replace(/\./g, "");
+                setPrecioCalc(formattedMonto);
+              }}
+            />
           </>
         )}
 
@@ -252,7 +275,7 @@ export default function Home() {
                 ].map((currency) => (
                   <button
                     key={currency.id}
-                    onClick={() => setMonedaCalc(currency.id)}
+                    onClick={() => handleMonedaCalcChange(currency.id)}
                     style={{
                       flex: 1,
                       padding: "0.75rem 1rem",

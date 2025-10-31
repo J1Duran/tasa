@@ -17,15 +17,18 @@ export default function ResultadoCalculadora({ resultado }) {
   };
 
   const copyToClipboard = async (text, setCopied) => {
+    // Format for clipboard: replace dots with nothing, keep comma for decimals
+    const copyValue = String(text).replace(/\./g, "");
+    
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(copyValue);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error("Error copying:", err);
       // Fallback for older browsers
       const textArea = document.createElement("textarea");
-      textArea.value = text;
+      textArea.value = copyValue;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand("copy");
