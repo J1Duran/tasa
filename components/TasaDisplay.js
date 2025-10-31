@@ -90,7 +90,15 @@ export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
     day: "numeric",
   });
 
-  const currencyLabel = moneda === "EUR" ? "EUR" : "USD";
+  const currencyLabel =
+    moneda === "EUR" ? "EUR" : moneda === "USDT" ? "USDT" : "USD";
+
+  // Format number for display
+  const formatRate = (rateValue) => {
+    const num =
+      typeof rateValue === "number" ? rateValue : parseFloat(rateValue);
+    return num % 1 === 0 ? num.toFixed(0) : num.toFixed(2);
+  };
 
   return (
     <div className="tasa-display">
@@ -104,6 +112,41 @@ export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
           {copied ? "✓" : "📋"}
         </button>
       </div>
+
+      {/* Show buy and sell rates for USDT (reference only) */}
+      {moneda === "USDT" && rate.tasaCompra && rate.tasaVenta && (
+        <div style={{ marginTop: "0.75rem" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "1rem",
+              justifyContent: "center",
+              fontSize: "0.875rem",
+              opacity: 0.9,
+              marginBottom: "0.5rem",
+            }}
+          >
+            <span>
+              <strong>Compra:</strong> {formatRate(rate.tasaCompra)} Bs
+            </span>
+            <span>|</span>
+            <span>
+              <strong>Venta:</strong> {formatRate(rate.tasaVenta)} Bs
+            </span>
+          </div>
+          <div
+            style={{
+              fontSize: "0.75rem",
+              opacity: 0.8,
+              textAlign: "center",
+              fontStyle: "italic",
+            }}
+          >
+            Promedio basado en transacciones de 100 USDT
+          </div>
+        </div>
+      )}
+
       <div className="tasa-fecha">{formattedDate}</div>
       <button
         onClick={getRate}

@@ -1,4 +1,5 @@
 import "./globals.css";
+import VisitTracker from "@/components/VisitTracker";
 
 export const metadata = {
   title: "Calculadora BCV - Tipo de Cambio USD",
@@ -9,7 +10,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="es">
-      <body>{children}</body>
+      <body>
+        {children}
+        <VisitTracker />
+      </body>
     </html>
   );
 }

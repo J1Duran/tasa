@@ -110,7 +110,12 @@ export default function Home() {
 
         <div className="input-group">
           <label htmlFor="cantidades">
-            {activeCurrency === "EUR" ? "€" : "💵"} Cantidades en {activeCurrency}
+            {activeCurrency === "EUR"
+              ? "€"
+              : activeCurrency === "USDT"
+              ? "₮"
+              : "💵"}{" "}
+            Cantidades en {activeCurrency}
           </label>
           <input
             id="cantidades"

@@ -15,7 +15,10 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "axios": "^1.6.0",
-    "cheerio": "^1.0.0-rc.12"
+    "cheerio": "^1.0.0-rc.12",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "ua-parser-js": "^1.0.37"
   },
   "devDependencies": {
     "eslint": "^8.0.0",

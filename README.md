@@ -4,8 +4,9 @@ Aplicación web para convertir USD a Bolívares usando la tasa oficial del Banco
 
 ## ✨ Características
 
-- 🔄 Obtiene la tasa oficial del BCV automáticamente
-- 💵 Calculadora para múltiples cantidades en USD
+- 🔄 Obtiene la tasa oficial del BCV automáticamente (USD y EUR)
+- 💵 Calculadora para múltiples cantidades en USD, EUR o USDT
+- ₮ Soporte para USDT con tasas de Binance P2P
 - 📱 Diseño responsive optimizado para móviles
 - ⚡ Caché de tasa para mejor rendimiento
 - 🚀 Desplegada en Vercel
@@ -14,27 +15,52 @@ Aplicación web para convertir USD a Bolívares usando la tasa oficial del Banco
 
 ### Prerrequisitos
 
-- Node.js 18+ 
+- Node.js 18+
 - npm o yarn
 
 ### Instalación
 
 1. Clona el repositorio o navega al directorio:
+
 ```bash
 cd bcv
 ```
 
 2. Instala las dependencias:
+
 ```bash
 npm install
 ```
 
-3. Ejecuta el servidor de desarrollo:
+3. Configura las variables de entorno:
+
+   - Crea un archivo `.env.local` en la raíz del proyecto
+   - Agrega las siguientes variables:
+
+   ```
+   # Binance API Keys (opcional - solo necesario si API requiere autenticación)
+   BINANCE_API_KEY=tu_api_key_aqui
+   BINANCE_SECRET_KEY=tu_secret_key_aqui
+
+   # Credenciales de administración
+   ADMIN_USERNAME=admin
+   ADMIN_PASSWORD=tu_password_seguro
+   JWT_SECRET=tu_secret_jwt_aleatorio_muy_seguro
+
+   # (Opcional) Si prefieres usar hash de password en lugar de texto plano:
+   # ADMIN_PASSWORD_HASH=hash_generado_con_bcrypt
+   ```
+
+   - **Nota**: Las tasas de USDT desde Binance P2P funcionan sin API keys ya que el endpoint es público
+   - **Importante**: Cambia `ADMIN_PASSWORD` y `JWT_SECRET` por valores seguros en producción
+
+4. Ejecuta el servidor de desarrollo:
+
 ```bash
 npm run dev
 ```
 
-4. Abre [http://localhost:3000](http://localhost:3000) en tu navegador
+5. Abre [http://localhost:3000](http://localhost:3000) en tu navegador
 
 ## 📦 Script CLI (Original)
 
@@ -62,11 +88,13 @@ node scraper.js
 ### Opción 2: Despliegue desde CLI
 
 1. Instala Vercel CLI:
+
 ```bash
 npm i -g vercel
 ```
 
 2. Desde el directorio del proyecto:
+
 ```bash
 vercel
 ```
@@ -95,8 +123,16 @@ vercel
 │   ├── TasaDisplay.js      # Componente para mostrar tasa
 │   └── Resultado.js        # Componente para mostrar resultados
 ├── lib/
-│   └── bcv.js              # Lógica del scraper (reutilizable)
-├── scraper.js              # Script CLI original
+│   ├── auth.js              # Funciones de autenticación
+│   ├── bcv.js               # Lógica del scraper BCV (reutilizable)
+│   ├── binance.js           # Lógica para obtener tasas de Binance P2P
+│   ├── scraping-monitor.js  # Monitoreo de scraping
+│   └── visits.js            # Gestión de visitas
+├── middleware.js            # Middleware para registrar visitas
+├── data/                    # Directorio de datos (gitignored)
+│   ├── visits.json          # Registro de visitas
+│   └── scraping-status.json # Estado de scraping
+├── scraper.js               # Script CLI original
 ├── package.json
 ├── next.config.js
 ├── vercel.json
@@ -113,13 +149,16 @@ vercel
 
 ## 📱 Uso
 
-1. La aplicación carga automáticamente la tasa del BCV
-2. Ingresa cantidades en USD (separadas por comas o espacios)
+1. La aplicación carga automáticamente la tasa según la pestaña seleccionada:
+   - **USD/EUR**: Tasa oficial del BCV
+   - **USDT**: Tasa promedio de Binance P2P (compra y venta para transacciones de 100 USDT)
+2. Selecciona la pestaña de la moneda que deseas usar (USD, EUR o USDT)
+3. Ingresa cantidades en la moneda seleccionada (separadas por comas o espacios)
    - Ejemplo: `100, 20, 40` o `100 20 40`
-3. Haz clic en "Calcular"
-4. Verás el resultado con:
+4. Haz clic en "Calcular"
+5. Verás el resultado con:
    - Lista de cantidades ingresadas
-   - Suma total en USD
+   - Suma total en la moneda seleccionada
    - Tipo de cambio utilizado
    - Total en Bolívares
 
@@ -135,7 +174,44 @@ vercel
 
 - La tasa se cachea por 5 minutos para mejorar el rendimiento
 - Si hay un error al obtener la tasa nueva, se usa la tasa en caché (si existe)
+- **USD y EUR**: Usan la tasa oficial del Banco Central de Venezuela (BCV)
+- **USDT**: Usa la tasa promedio de Binance P2P calculada a partir de las ofertas de compra y venta para transacciones de 100 USDT
 - La aplicación es completamente responsive y funciona en móviles
+
+## 🔑 Configuración de Variables de Entorno
+
+### API Keys de Binance (Opcional)
+
+Las tasas de USDT desde Binance P2P funcionan sin API keys ya que el endpoint es público. Sin embargo, si Binance requiere autenticación en el futuro:
+
+1. Obtén tus API keys desde: https://www.binance.com/en/my/settings/api-management
+2. Agrega las variables `BINANCE_API_KEY` y `BINANCE_SECRET_KEY` a tu `.env.local`
+
+### Credenciales de Administración
+
+El panel de administración requiere configurar credenciales:
+
+1. Crea un archivo `.env.local` en la raíz del proyecto
+2. Agrega las siguientes variables:
+   ```
+   ADMIN_USERNAME=admin
+   ADMIN_PASSWORD=tu_password_seguro
+   JWT_SECRET=tu_secret_jwt_aleatorio_muy_seguro
+   ```
+3. El archivo `.env.local` está en `.gitignore` y no se subirá al repositorio
+
+### Panel de Administración
+
+Accede al panel de administración en `/admin`:
+
+- **Login**: `/admin`
+- **Dashboard**: `/admin/dashboard` (requiere autenticación)
+
+El panel muestra:
+
+- Estado de scraping (BCV USD/EUR y Binance USDT)
+- Estadísticas de visitas (totales, del día, historial completo)
+- Detalles de cada visita (IP, navegador, dispositivo, etc.)
 
 ## 🐛 Solución de Problemas
 

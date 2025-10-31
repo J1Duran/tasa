@@ -4,6 +4,7 @@ export default function Tabs({ activeTab, onTabChange }) {
   const tabs = [
     { id: "USD", label: "💵 USD" },
     { id: "EUR", label: "€ EUR" },
+    { id: "USDT", label: "₮ USDT" },
   ];
 
   return (
