@@ -27,14 +27,14 @@ export const metadata = {
     siteName: "Calculadora Perse",
     locale: "es_VE",
     type: "website",
-      images: [
-        {
-          url: "/og-image.png",
-          width: 1200,
-          height: 630,
-          alt: "Calculadora Perse",
-        },
-      ],
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Calculadora Perse",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
