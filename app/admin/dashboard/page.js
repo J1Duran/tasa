@@ -10,6 +10,8 @@ export default function AdminDashboard() {
   const [scrapingStatus, setScrapingStatus] = useState(null);
   const [stats, setStats] = useState(null);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(50);
 
   useEffect(() => {
     checkAuth();
@@ -247,15 +249,45 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <h3 style={{ marginBottom: "1rem", fontSize: "1.25rem" }}>
-                Visitas Recientes (últimas 50)
-              </h3>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+                <h3 style={{ fontSize: "1.25rem", margin: 0 }}>
+                  Visitas Recientes
+                </h3>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <span style={{ fontSize: "0.875rem", color: "#64748b" }}>Mostrar:</span>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1); // Reset to page 1 when changing items per page
+                    }}
+                    style={{
+                      padding: "0.5rem",
+                      borderRadius: "6px",
+                      border: "1px solid var(--border)",
+                      fontSize: "0.875rem",
+                      background: "white",
+                    }}
+                  >
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                  </select>
+                </div>
+              </div>
+              
+              {/* Pagination Info */}
+              {stats.recent && stats.recent.length > 0 && (
+                <div style={{ marginBottom: "1rem", fontSize: "0.875rem", color: "#64748b" }}>
+                  Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, stats.recent.length)} de {stats.recent.length} visitas
+                </div>
+              )}
+
               <div
                 style={{
-                  maxHeight: "400px",
-                  overflowY: "auto",
                   border: "1px solid var(--border)",
                   borderRadius: "8px",
+                  overflowX: "auto",
                 }}
               >
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -280,42 +312,43 @@ export default function AdminDashboard() {
                       <th style={{ padding: "0.75rem", textAlign: "left", borderBottom: "2px solid var(--border)" }}>
                         Dispositivo
                       </th>
-                      <th style={{ padding: "0.75rem", textAlign: "left", borderBottom: "2px solid var(--border)" }}>
-                        Path
-                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {stats.recent && stats.recent.length > 0 ? (
-                      stats.recent.map((visit, index) => (
-                        <tr
-                          key={index}
-                          style={{
-                            borderBottom: "1px solid var(--border)",
-                            background: index % 2 === 0 ? "white" : "var(--background)",
-                          }}
-                        >
-                          <td style={{ padding: "0.75rem", fontSize: "0.875rem" }}>
-                            {formatDate(visit.timestamp)}
-                          </td>
-                          <td style={{ padding: "0.75rem", fontSize: "0.875rem" }}>
-                            {visit.ip}
-                          </td>
-                          <td style={{ padding: "0.75rem", fontSize: "0.875rem" }}>
-                            {visit.browser?.name} {visit.browser?.version}
-                          </td>
-                          <td style={{ padding: "0.75rem", fontSize: "0.875rem" }}>
-                            {visit.device?.type === "mobile" ? "📱" : "💻"}{" "}
-                            {visit.os?.name} {visit.os?.version}
-                          </td>
-                          <td style={{ padding: "0.75rem", fontSize: "0.875rem" }}>
-                            {visit.path}
-                          </td>
-                        </tr>
-                      ))
+                      (() => {
+                        const totalPages = Math.ceil(stats.recent.length / itemsPerPage);
+                        const startIndex = (currentPage - 1) * itemsPerPage;
+                        const endIndex = startIndex + itemsPerPage;
+                        const paginatedVisits = stats.recent.slice(startIndex, endIndex);
+                        
+                        return paginatedVisits.map((visit, index) => (
+                          <tr
+                            key={index}
+                            style={{
+                              borderBottom: "1px solid var(--border)",
+                              background: index % 2 === 0 ? "white" : "var(--background)",
+                            }}
+                          >
+                            <td style={{ padding: "0.75rem", fontSize: "0.875rem" }}>
+                              {formatDate(visit.timestamp)}
+                            </td>
+                            <td style={{ padding: "0.75rem", fontSize: "0.875rem" }}>
+                              {visit.ip}
+                            </td>
+                            <td style={{ padding: "0.75rem", fontSize: "0.875rem" }}>
+                              {visit.browser?.name} {visit.browser?.version}
+                            </td>
+                            <td style={{ padding: "0.75rem", fontSize: "0.875rem" }}>
+                              {visit.device?.type === "mobile" ? "📱" : "💻"}{" "}
+                              {visit.os?.name} {visit.os?.version}
+                            </td>
+                          </tr>
+                        ));
+                      })()
                     ) : (
                       <tr>
-                        <td colSpan="5" style={{ padding: "2rem", textAlign: "center", color: "#64748b" }}>
+                        <td colSpan="4" style={{ padding: "2rem", textAlign: "center", color: "#64748b" }}>
                           No hay visitas registradas
                         </td>
                       </tr>
@@ -323,6 +356,45 @@ export default function AdminDashboard() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination Controls */}
+              {stats.recent && stats.recent.length > itemsPerPage && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    marginTop: "1rem",
+                  }}
+                >
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="btn btn-secondary"
+                    style={{
+                      opacity: currentPage === 1 ? 0.5 : 1,
+                      cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    ← Anterior
+                  </button>
+                  <span style={{ fontSize: "0.875rem", fontWeight: 600 }}>
+                    Página {currentPage} de {Math.ceil(stats.recent.length / itemsPerPage)}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(Math.ceil(stats.recent.length / itemsPerPage), p + 1))}
+                    disabled={currentPage >= Math.ceil(stats.recent.length / itemsPerPage)}
+                    className="btn btn-secondary"
+                    style={{
+                      opacity: currentPage >= Math.ceil(stats.recent.length / itemsPerPage) ? 0.5 : 1,
+                      cursor: currentPage >= Math.ceil(stats.recent.length / itemsPerPage) ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    Siguiente →
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
