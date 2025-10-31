@@ -32,7 +32,13 @@ cd bcv
 npm install
 ```
 
-3. Configura las variables de entorno:
+3. Configura Upstash Redis (requerido para producción):
+
+   - Ve al dashboard de Vercel → Storage → Create Database → Upstash
+   - Conecta la base de datos a tu proyecto
+   - Las variables de entorno se configuran automáticamente con nombres específicos de tu proyecto
+
+4. Configura las variables de entorno:
 
    - Crea un archivo `.env.local` en la raíz del proyecto
    - Agrega las siguientes variables:
@@ -47,20 +53,28 @@ npm install
    ADMIN_PASSWORD=tu_password_seguro
    JWT_SECRET=tu_secret_jwt_aleatorio_muy_seguro
 
+   # Upstash Redis (configurado automáticamente por Vercel en producción)
+   # Los nombres de las variables dependen de tu configuración en Vercel
+   # Ejemplo: tasa_KV_REST_API_URL, tasa_KV_REST_API_TOKEN
+   # O estándar: UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN
+   tasa_KV_REST_API_URL=tu_url_aqui
+   tasa_KV_REST_API_TOKEN=tu_token_aqui
+
    # (Opcional) Si prefieres usar hash de password en lugar de texto plano:
    # ADMIN_PASSWORD_HASH=hash_generado_con_bcrypt
    ```
 
    - **Nota**: Las tasas de USDT desde Binance P2P funcionan sin API keys ya que el endpoint es público
    - **Importante**: Cambia `ADMIN_PASSWORD` y `JWT_SECRET` por valores seguros en producción
+   - **Redis**: En producción, las variables de Upstash se configuran automáticamente por Vercel
 
-4. Ejecuta el servidor de desarrollo:
+5. Ejecuta el servidor de desarrollo:
 
 ```bash
 npm run dev
 ```
 
-5. Abre [http://localhost:3000](http://localhost:3000) en tu navegador
+6. Abre [http://localhost:3000](http://localhost:3000) en tu navegador
 
 ## 📦 Script CLI (Original)
 
@@ -126,12 +140,9 @@ vercel
 │   ├── auth.js              # Funciones de autenticación
 │   ├── bcv.js               # Lógica del scraper BCV (reutilizable)
 │   ├── binance.js           # Lógica para obtener tasas de Binance P2P
+│   ├── redis.js             # Cliente Redis y helpers
 │   ├── scraping-monitor.js  # Monitoreo de scraping
 │   └── visits.js            # Gestión de visitas
-├── middleware.js            # Middleware para registrar visitas
-├── data/                    # Directorio de datos (gitignored)
-│   ├── visits.json          # Registro de visitas
-│   └── scraping-status.json # Estado de scraping
 ├── scraper.js               # Script CLI original
 ├── package.json
 ├── next.config.js
@@ -168,6 +179,10 @@ vercel
 - **React 18** - Biblioteca UI
 - **Axios** - Cliente HTTP
 - **Cheerio** - Parser HTML (server-side)
+- **Upstash Redis** - Almacenamiento de datos (visitas y scraping status)
+- **bcryptjs** - Hash de passwords
+- **jsonwebtoken** - Autenticación JWT
+- **ua-parser-js** - Parse de user agents
 - **Vercel** - Plataforma de despliegue
 
 ## 📝 Notas

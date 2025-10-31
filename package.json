@@ -18,7 +18,8 @@
     "cheerio": "^1.0.0-rc.12",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
-    "ua-parser-js": "^1.0.37"
+    "ua-parser-js": "^1.0.37",
+    "@upstash/redis": "^1.32.0"
   },
   "devDependencies": {
     "eslint": "^8.0.0",
