@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 
 export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
-  const [tasa, setTasa] = useState(null);
+  const [rate, setRate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [copiado, setCopiado] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const obtenerTasa = async () => {
+  const getRate = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -16,7 +16,7 @@ export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
       const data = await response.json();
 
       if (data.success) {
-        setTasa(data.data);
+        setRate(data.data);
         if (onTasaChange) {
           onTasaChange(data.data);
         }
@@ -31,7 +31,7 @@ export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
   };
 
   useEffect(() => {
-    obtenerTasa();
+    getRate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moneda]);
 
@@ -49,7 +49,7 @@ export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
       <div className="error">
         <strong>Error:</strong> {error}
         <button
-          onClick={obtenerTasa}
+          onClick={getRate}
           className="btn btn-secondary"
           style={{ marginTop: "0.5rem" }}
         >
@@ -59,54 +59,54 @@ export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
     );
   }
 
-  if (!tasa) {
+  if (!rate) {
     return null;
   }
 
-  const copiarTasa = async () => {
+  const copyRate = async () => {
     try {
-      await navigator.clipboard.writeText(tasa.valor);
-      setCopiado(true);
-      setTimeout(() => setCopiado(false), 2000);
+      await navigator.clipboard.writeText(rate.valor);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error("Error al copiar:", err);
-      // Fallback para navegadores antiguos
+      console.error("Error copying:", err);
+      // Fallback for older browsers
       const textArea = document.createElement("textarea");
-      textArea.value = tasa.valor;
+      textArea.value = rate.valor;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand("copy");
       document.body.removeChild(textArea);
-      setCopiado(true);
-      setTimeout(() => setCopiado(false), 2000);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
-  const fecha = new Date(tasa.fecha);
-  const fechaFormateada = fecha.toLocaleDateString("es-VE", {
+  const date = new Date(rate.fecha);
+  const formattedDate = date.toLocaleDateString("es-VE", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
   });
 
-  const monedaLabel = moneda === "EUR" ? "EUR" : "USD";
+  const currencyLabel = moneda === "EUR" ? "EUR" : "USD";
 
   return (
     <div className="tasa-display">
-      <h2>Tipo de Cambio {monedaLabel}</h2>
+      <h2>Tipo de Cambio {currencyLabel}</h2>
       <div className="tasa-valor-container">
         <div className="tasa-valor-group">
-          <span className="tasa-numero">{tasa.valor}</span>
+          <span className="tasa-numero">{rate.valor}</span>
           <span className="tasa-unidad">Bs</span>
         </div>
-        <button onClick={copiarTasa} className="btn-copiar" title="Copiar tasa">
-          {copiado ? "✓" : "📋"}
+        <button onClick={copyRate} className="btn-copiar" title="Copiar tasa">
+          {copied ? "✓" : "📋"}
         </button>
       </div>
-      <div className="tasa-fecha">{fechaFormateada}</div>
+      <div className="tasa-fecha">{formattedDate}</div>
       <button
-        onClick={obtenerTasa}
+        onClick={getRate}
         style={{
           marginTop: "1rem",
           padding: "0.5rem 1rem",

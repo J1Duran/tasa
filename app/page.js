@@ -6,40 +6,40 @@ import Resultado from "@/components/Resultado";
 import Tabs from "@/components/Tabs";
 
 export default function Home() {
-  const [monedaActiva, setMonedaActiva] = useState("USD");
-  const [inputCantidades, setInputCantidades] = useState("");
-  const [resultado, setResultado] = useState(null);
+  const [activeCurrency, setActiveCurrency] = useState("USD");
+  const [inputAmounts, setInputAmounts] = useState("");
+  const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [tasaActual, setTasaActual] = useState(null);
+  const [currentRate, setCurrentRate] = useState(null);
 
-  // Obtener tasa actual al cargar o cambiar de moneda
-  const obtenerTasaActual = async (moneda) => {
+  // Get current rate when loading or changing currency
+  const getCurrentRate = async (currency) => {
     try {
-      const response = await fetch(`/api/tasa?moneda=${moneda}`);
+      const response = await fetch(`/api/tasa?moneda=${currency}`);
       const data = await response.json();
       if (data.success) {
-        setTasaActual(data.data);
+        setCurrentRate(data.data);
       }
     } catch (err) {
-      console.error("Error al obtener tasa:", err);
+      console.error("Error getting rate:", err);
     }
   };
 
   useEffect(() => {
-    obtenerTasaActual(monedaActiva);
-    setResultado(null);
-    setInputCantidades("");
+    getCurrentRate(activeCurrency);
+    setResult(null);
+    setInputAmounts("");
     setError(null);
-  }, [monedaActiva]);
+  }, [activeCurrency]);
 
-  const calcular = async () => {
-    if (!inputCantidades.trim()) {
-      setError(`Por favor ingresa al menos una cantidad en ${monedaActiva}`);
+  const calculate = async () => {
+    if (!inputAmounts.trim()) {
+      setError(`Por favor ingresa al menos una cantidad en ${activeCurrency}`);
       return;
     }
 
-    if (!tasaActual) {
+    if (!currentRate) {
       setError("No se ha podido obtener la tasa del BCV. Intenta actualizar la tasa.");
       return;
     }
@@ -48,37 +48,37 @@ export default function Home() {
     setError(null);
 
     try {
-      // Separar cantidades por coma o espacio
-      const cantidades = inputCantidades
+      // Split amounts by comma or space
+      const amounts = inputAmounts
         .split(/[,\s]+/)
         .map((val) => val.trim())
         .filter((val) => val !== "")
         .map((val) => parseFloat(val.replace(",", ".")))
         .filter((val) => !isNaN(val) && val > 0);
 
-      if (cantidades.length === 0) {
+      if (amounts.length === 0) {
         setError("Por favor ingresa cantidades válidas (números positivos)");
         setLoading(false);
         return;
       }
 
-      // Llamar a la API de cálculo
+      // Call calculation API
       const response = await fetch("/api/calcular", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          cantidades,
-          tasa: tasaActual.tasa,
-          moneda: monedaActiva,
+          cantidades: amounts,
+          tasa: currentRate.tasa,
+          moneda: activeCurrency,
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        setResultado(data.data);
+        setResult(data.data);
         setError(null);
       } else {
         setError(data.error || "Error al calcular");
@@ -90,9 +90,9 @@ export default function Home() {
     }
   };
 
-  const limpiar = () => {
-    setInputCantidades("");
-    setResultado(null);
+  const clear = () => {
+    setInputAmounts("");
+    setResult(null);
     setError(null);
   };
 
@@ -104,26 +104,26 @@ export default function Home() {
           <p>Convierte USD/EUR a Bolívares usando la tasa oficial del BCV</p>
         </div>
 
-        <Tabs activeTab={monedaActiva} onTabChange={setMonedaActiva} />
+        <Tabs activeTab={activeCurrency} onTabChange={setActiveCurrency} />
 
-        <TasaDisplay moneda={monedaActiva} onTasaChange={setTasaActual} />
+        <TasaDisplay moneda={activeCurrency} onTasaChange={setCurrentRate} />
 
         <div className="input-group">
           <label htmlFor="cantidades">
-            {monedaActiva === "EUR" ? "€" : "💵"} Cantidades en {monedaActiva}
+            {activeCurrency === "EUR" ? "€" : "💵"} Cantidades en {activeCurrency}
           </label>
           <input
             id="cantidades"
             type="text"
-            placeholder={`Ej: 100, 20, 40 o 100 20 40 (en ${monedaActiva})`}
-            value={inputCantidades}
-            onChange={(e) => setInputCantidades(e.target.value)}
+            placeholder={`Ej: 100, 20, 40 o 100 20 40 (en ${activeCurrency})`}
+            value={inputAmounts}
+            onChange={(e) => setInputAmounts(e.target.value)}
             onKeyPress={(e) => {
               if (e.key === "Enter") {
-                calcular();
+                calculate();
               }
             }}
-            disabled={loading || !tasaActual}
+            disabled={loading || !currentRate}
           />
           <div className="helper-text">
             Separa múltiples cantidades con comas o espacios
@@ -137,9 +137,9 @@ export default function Home() {
         )}
 
         <button
-          onClick={calcular}
+          onClick={calculate}
           className="btn btn-primary"
-          disabled={loading || !tasaActual || !inputCantidades.trim()}
+          disabled={loading || !currentRate || !inputAmounts.trim()}
         >
           {loading ? (
             <>
@@ -151,13 +151,13 @@ export default function Home() {
           )}
         </button>
 
-        {resultado && (
-          <button onClick={limpiar} className="btn btn-secondary">
+        {result && (
+          <button onClick={clear} className="btn btn-secondary">
             Limpiar
           </button>
         )}
 
-        <Resultado resultado={resultado} />
+        <Resultado resultado={result} />
       </div>
     </div>
   );

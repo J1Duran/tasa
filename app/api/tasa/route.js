@@ -1,81 +1,81 @@
 import { obtenerTipoCambio } from "@/lib/bcv";
 import { NextResponse } from "next/server";
 
-// Cache de las tasas (5 minutos)
-const tasaCache = {
+// Rate cache (5 minutes)
+const rateCache = {
   USD: null,
   EUR: null,
 };
-const tasaCacheTimestamp = {
+const rateCacheTimestamp = {
   USD: null,
   EUR: null,
 };
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos en milisegundos
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 /**
  * GET /api/tasa?moneda=USD|EUR
- * Obtiene el tipo de cambio del BCV con caché de 5 minutos
+ * Gets the BCV exchange rate with 5 minute cache
  */
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const moneda = (searchParams.get("moneda") || "USD").toUpperCase();
+    const currency = (searchParams.get("moneda") || "USD").toUpperCase();
 
-    if (moneda !== "USD" && moneda !== "EUR") {
+    if (currency !== "USD" && currency !== "EUR") {
       return NextResponse.json(
         {
           success: false,
-          error: "Moneda no soportada. Use USD o EUR",
+          error: "Unsupported currency. Use USD or EUR",
         },
         { status: 400 }
       );
     }
 
-    // Verificar si hay caché válido
+    // Check if valid cache exists
     const now = Date.now();
     if (
-      tasaCache[moneda] &&
-      tasaCacheTimestamp[moneda] &&
-      now - tasaCacheTimestamp[moneda] < CACHE_DURATION
+      rateCache[currency] &&
+      rateCacheTimestamp[currency] &&
+      now - rateCacheTimestamp[currency] < CACHE_DURATION
     ) {
       return NextResponse.json({
         success: true,
-        data: tasaCache[moneda],
+        data: rateCache[currency],
         cached: true,
       });
     }
 
-    // Obtener nueva tasa del BCV
-    const datosTasa = await obtenerTipoCambio(moneda);
+    // Get new rate from BCV
+    const rateData = await obtenerTipoCambio(currency);
 
-    // Actualizar caché
-    tasaCache[moneda] = datosTasa;
-    tasaCacheTimestamp[moneda] = now;
+    // Update cache
+    rateCache[currency] = rateData;
+    rateCacheTimestamp[currency] = now;
 
     return NextResponse.json({
       success: true,
-      data: datosTasa,
+      data: rateData,
       cached: false,
     });
   } catch (error) {
-    console.error("Error al obtener tasa del BCV:", error);
+    console.error("Error getting BCV rate:", error);
 
-    const moneda = (new URL(request.url).searchParams.get("moneda") || "USD").toUpperCase();
+    const currency = (new URL(request.url).searchParams.get("moneda") || "USD").toUpperCase();
 
-    // Si hay error pero tenemos caché, retornar el caché
-    if (tasaCache[moneda]) {
+    // If error but we have cache, return cache
+    if (rateCache[currency]) {
       return NextResponse.json({
         success: true,
-        data: tasaCache[moneda],
+        data: rateCache[currency],
         cached: true,
-        warning: "Usando tasa en caché debido a error al obtener nueva tasa",
+        warning: "Using cached rate due to error fetching new rate",
       });
     }
 
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Error desconocido al obtener la tasa",
+        error: error.message || "Unknown error getting rate",
       },
       { status: 500 }
     );

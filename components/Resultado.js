@@ -3,34 +3,34 @@
 import { useState } from "react";
 
 export default function Resultado({ resultado }) {
-  const [copiado, setCopiado] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   if (!resultado) return null;
 
-  const formatearNumero = (numero) => {
+  const formatNumber = (number) => {
     return new Intl.NumberFormat("es-VE", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(numero);
+    }).format(number);
   };
 
-  const copiarTotal = async () => {
-    const totalFormateado = formatearNumero(resultado.totalBolivares);
+  const copyTotal = async () => {
+    const formattedTotal = formatNumber(resultado.totalBolivares);
     try {
-      await navigator.clipboard.writeText(totalFormateado);
-      setCopiado(true);
-      setTimeout(() => setCopiado(false), 2000);
+      await navigator.clipboard.writeText(formattedTotal);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error("Error al copiar:", err);
-      // Fallback para navegadores antiguos
+      console.error("Error copying:", err);
+      // Fallback for older browsers
       const textArea = document.createElement("textarea");
-      textArea.value = totalFormateado;
+      textArea.value = formattedTotal;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand("copy");
       document.body.removeChild(textArea);
-      setCopiado(true);
-      setTimeout(() => setCopiado(false), 2000);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -43,11 +43,11 @@ export default function Resultado({ resultado }) {
           <strong style={{ display: "block", marginBottom: "0.5rem" }}>
             Cantidades ingresadas:
           </strong>
-          {resultado.cantidades.map((cantidad, index) => (
+          {resultado.cantidades.map((amount, index) => (
             <div key={index} className="cantidad-item">
               <span>{index + 1}.</span>
               <span>
-                {formatearNumero(cantidad)} {resultado.moneda || "USD"}
+                {formatNumber(amount)} {resultado.moneda || "USD"}
               </span>
             </div>
           ))}
@@ -58,7 +58,7 @@ export default function Resultado({ resultado }) {
         <span className="resultado-item-label">Suma total:</span>
         <span className="resultado-item-value">
           {resultado.moneda === "EUR" ? "€" : "$"}
-          {formatearNumero(resultado.sumaMoneda || resultado.sumaUSD)}{" "}
+          {formatNumber(resultado.sumaMoneda || resultado.sumaUSD)}{" "}
           {resultado.moneda || "USD"}
         </span>
       </div>
@@ -66,7 +66,7 @@ export default function Resultado({ resultado }) {
       <div className="resultado-item">
         <span className="resultado-item-label">Tipo de cambio BCV:</span>
         <span className="resultado-item-value">
-          {formatearNumero(resultado.tasa)} Bs/{resultado.moneda || "USD"}
+          {formatNumber(resultado.tasa)} Bs/{resultado.moneda || "USD"}
         </span>
       </div>
 
@@ -84,14 +84,14 @@ export default function Resultado({ resultado }) {
             style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}
           >
             <span className="resultado-item-value">
-              {formatearNumero(resultado.totalBolivares)} Bs
+              {formatNumber(resultado.totalBolivares)} Bs
             </span>
             <button
-              onClick={copiarTotal}
+              onClick={copyTotal}
               className="btn-copiar-resultado"
               title="Copiar total en bolívares"
             >
-              {copiado ? "✓" : "📋"}
+              {copied ? "✓" : "📋"}
             </button>
           </div>
         </div>
