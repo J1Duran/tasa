@@ -1,6 +1,6 @@
 {
   "name": "Calculadora Perse - Tipo de Cambio",
-  "short_name": "Perse",
+  "short_name": "Calculadora Perse",
   "description": "Calculadora para convertir USD, EUR y USDT a bolos usando PERSE y Binance P2P",
   "start_url": "/",
   "display": "standalone",
