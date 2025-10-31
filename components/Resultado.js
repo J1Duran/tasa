@@ -46,7 +46,9 @@ export default function Resultado({ resultado }) {
           {resultado.cantidades.map((cantidad, index) => (
             <div key={index} className="cantidad-item">
               <span>{index + 1}.</span>
-              <span>{formatearNumero(cantidad)} USD</span>
+              <span>
+                {formatearNumero(cantidad)} {resultado.moneda || "USD"}
+              </span>
             </div>
           ))}
         </div>
@@ -55,14 +57,16 @@ export default function Resultado({ resultado }) {
       <div className="resultado-item">
         <span className="resultado-item-label">Suma total:</span>
         <span className="resultado-item-value">
-          ${formatearNumero(resultado.sumaUSD)} USD
+          {resultado.moneda === "EUR" ? "€" : "$"}
+          {formatearNumero(resultado.sumaMoneda || resultado.sumaUSD)}{" "}
+          {resultado.moneda || "USD"}
         </span>
       </div>
 
       <div className="resultado-item">
         <span className="resultado-item-label">Tipo de cambio BCV:</span>
         <span className="resultado-item-value">
-          {formatearNumero(resultado.tasa)} Bs/USD
+          {formatearNumero(resultado.tasa)} Bs/{resultado.moneda || "USD"}
         </span>
       </div>
 

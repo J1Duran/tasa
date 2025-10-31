@@ -3,13 +3,13 @@ import { NextResponse } from "next/server";
 
 /**
  * POST /api/calcular
- * Calcula la conversión de USD a Bolívares
- * Body: { cantidades: number[], tasa: number }
+ * Calcula la conversión de una moneda a Bolívares
+ * Body: { cantidades: number[], tasa: number, moneda: string }
  */
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { cantidades, tasa } = body;
+    const { cantidades, tasa, moneda = "USD" } = body;
 
     // Validar entrada
     if (!Array.isArray(cantidades) || cantidades.length === 0) {
@@ -33,7 +33,7 @@ export async function POST(request) {
     }
 
     // Calcular conversión
-    const resultado = calcularConversion(cantidades, tasa);
+    const resultado = calcularConversion(cantidades, tasa, moneda);
 
     return NextResponse.json({
       success: true,

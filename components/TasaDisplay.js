@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-export default function TasaDisplay({ onTasaChange }) {
+export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
   const [tasa, setTasa] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,7 +12,7 @@ export default function TasaDisplay({ onTasaChange }) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/tasa");
+      const response = await fetch(`/api/tasa?moneda=${moneda}`);
       const data = await response.json();
 
       if (data.success) {
@@ -33,7 +33,7 @@ export default function TasaDisplay({ onTasaChange }) {
   useEffect(() => {
     obtenerTasa();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [moneda]);
 
   if (loading) {
     return (
@@ -90,9 +90,11 @@ export default function TasaDisplay({ onTasaChange }) {
     day: "numeric",
   });
 
+  const monedaLabel = moneda === "EUR" ? "EUR" : "USD";
+
   return (
     <div className="tasa-display">
-      <h2>Tipo de Cambio USD</h2>
+      <h2>Tipo de Cambio {monedaLabel}</h2>
       <div className="tasa-valor-container">
         <div className="tasa-valor-group">
           <span className="tasa-numero">{tasa.valor}</span>

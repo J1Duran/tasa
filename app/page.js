@@ -3,18 +3,20 @@
 import { useState, useEffect } from "react";
 import TasaDisplay from "@/components/TasaDisplay";
 import Resultado from "@/components/Resultado";
+import Tabs from "@/components/Tabs";
 
 export default function Home() {
+  const [monedaActiva, setMonedaActiva] = useState("USD");
   const [inputCantidades, setInputCantidades] = useState("");
   const [resultado, setResultado] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [tasaActual, setTasaActual] = useState(null);
 
-  // Obtener tasa actual al cargar
-  const obtenerTasaActual = async () => {
+  // Obtener tasa actual al cargar o cambiar de moneda
+  const obtenerTasaActual = async (moneda) => {
     try {
-      const response = await fetch("/api/tasa");
+      const response = await fetch(`/api/tasa?moneda=${moneda}`);
       const data = await response.json();
       if (data.success) {
         setTasaActual(data.data);
@@ -25,12 +27,15 @@ export default function Home() {
   };
 
   useEffect(() => {
-    obtenerTasaActual();
-  }, []);
+    obtenerTasaActual(monedaActiva);
+    setResultado(null);
+    setInputCantidades("");
+    setError(null);
+  }, [monedaActiva]);
 
   const calcular = async () => {
     if (!inputCantidades.trim()) {
-      setError("Por favor ingresa al menos una cantidad en USD");
+      setError(`Por favor ingresa al menos una cantidad en ${monedaActiva}`);
       return;
     }
 
@@ -66,6 +71,7 @@ export default function Home() {
         body: JSON.stringify({
           cantidades,
           tasa: tasaActual.tasa,
+          moneda: monedaActiva,
         }),
       });
 
@@ -95,19 +101,21 @@ export default function Home() {
       <div className="card">
         <div className="header">
           <h1>💰 Calculadora BCV</h1>
-          <p>Convierte USD a Bolívares usando la tasa oficial del BCV</p>
+          <p>Convierte USD/EUR a Bolívares usando la tasa oficial del BCV</p>
         </div>
 
-        <TasaDisplay onTasaChange={setTasaActual} />
+        <Tabs activeTab={monedaActiva} onTabChange={setMonedaActiva} />
+
+        <TasaDisplay moneda={monedaActiva} onTasaChange={setTasaActual} />
 
         <div className="input-group">
           <label htmlFor="cantidades">
-            💵 Cantidades en USD
+            {monedaActiva === "EUR" ? "€" : "💵"} Cantidades en {monedaActiva}
           </label>
           <input
             id="cantidades"
             type="text"
-            placeholder="Ej: 100, 20, 40 o 100 20 40"
+            placeholder={`Ej: 100, 20, 40 o 100 20 40 (en ${monedaActiva})`}
             value={inputCantidades}
             onChange={(e) => setInputCantidades(e.target.value)}
             onKeyPress={(e) => {
