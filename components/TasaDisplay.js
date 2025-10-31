@@ -39,7 +39,7 @@ export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
     return (
       <div className="tasa-display">
         <div className="spinner"></div>
-        <p style={{ marginTop: "1rem" }}>Obteniendo tasa del BCV...</p>
+        <p style={{ marginTop: "1rem" }}>Obteniendo tasa...</p>
       </div>
     );
   }
@@ -106,7 +106,7 @@ export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
       <div className="tasa-valor-container">
         <div className="tasa-valor-group">
           <span className="tasa-numero">{rate.valor}</span>
-          <span className="tasa-unidad">Bs</span>
+          <span className="tasa-unidad">bolos</span>
         </div>
         <button onClick={copyRate} className="btn-copiar" title="Copiar tasa">
           {copied ? "✓" : "📋"}
@@ -127,11 +127,11 @@ export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
             }}
           >
             <span>
-              <strong>Compra:</strong> {formatRate(rate.tasaCompra)} Bs
+              <strong>Compra:</strong> {formatRate(rate.tasaCompra)} bolos
             </span>
             <span>|</span>
             <span>
-              <strong>Venta:</strong> {formatRate(rate.tasaVenta)} Bs
+              <strong>Venta:</strong> {formatRate(rate.tasaVenta)} bolos
             </span>
           </div>
           <div

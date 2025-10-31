@@ -5,6 +5,7 @@ export default function Tabs({ activeTab, onTabChange }) {
     { id: "USD", label: "💵 USD" },
     { id: "EUR", label: "€ EUR" },
     { id: "USDT", label: "₮ USDT" },
+    { id: "CALC", label: "🧮 Calculadora" },
   ];
 
   return (

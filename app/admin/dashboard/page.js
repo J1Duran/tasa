@@ -130,7 +130,7 @@ export default function AdminDashboard() {
             {scrapingStatus &&
               Object.entries(scrapingStatus).map(([currency, status]) => {
                 const isActive = status.active;
-                const source = currency === "USDT" ? "Binance P2P" : "BCV";
+                const source = currency === "USDT" ? "Binance P2P" : "PERSE";
 
                 return (
                   <div

@@ -64,9 +64,9 @@ export default function Resultado({ resultado }) {
       </div>
 
       <div className="resultado-item">
-        <span className="resultado-item-label">Tipo de cambio BCV:</span>
+        <span className="resultado-item-label">Tipo de cambio:</span>
         <span className="resultado-item-value">
-          {formatNumber(resultado.tasa)} Bs/{resultado.moneda || "USD"}
+          {formatNumber(resultado.tasa)} bolos/{resultado.moneda || "USD"}
         </span>
       </div>
 
@@ -79,17 +79,17 @@ export default function Resultado({ resultado }) {
             width: "100%",
           }}
         >
-          <span className="resultado-item-label">Total en Bolívares:</span>
+          <span className="resultado-item-label">Total en bolos:</span>
           <div
             style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}
           >
             <span className="resultado-item-value">
-              {formatNumber(resultado.totalBolivares)} Bs
+              {formatNumber(resultado.totalBolivares)} bolos
             </span>
             <button
               onClick={copyTotal}
               className="btn-copiar-resultado"
-              title="Copiar total en bolívares"
+              title="Copiar total en bolos"
             >
               {copied ? "✓" : "📋"}
             </button>

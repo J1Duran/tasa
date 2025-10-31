@@ -1,7 +1,7 @@
 {
-  "name": "Calculadora BCV - Tipo de Cambio",
-  "short_name": "BCV Calculator",
-  "description": "Calculadora para convertir USD, EUR y USDT a Bolívares usando la tasa oficial del BCV y Binance P2P",
+  "name": "Calculadora Perse - Tipo de Cambio",
+  "short_name": "Perse",
+  "description": "Calculadora para convertir USD, EUR y USDT a bolos usando PERSE y Binance P2P",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

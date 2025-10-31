@@ -2,14 +2,14 @@ import VisitTracker from "@/components/VisitTracker";
 import "./globals.css";
 
 export const metadata = {
-  title: "Calculadora BCV - Tipo de Cambio USD/EUR/USDT",
+  title: "Calculadora Perse - Tipo de Cambio USD/EUR/USDT",
   description:
-    "Calculadora para convertir USD, EUR y USDT a Bolívares usando la tasa oficial del BCV y Binance P2P",
+    "Calculadora para convertir USD, EUR y USDT a bolos usando PERSE y Binance P2P",
   keywords:
-    "BCV, calculadora, tipo de cambio, USD, EUR, USDT, bolívares, Venezuela",
-  authors: [{ name: "BCV Calculator" }],
-  creator: "BCV Calculator",
-  publisher: "BCV Calculator",
+    "PERSE, calculadora, tipo de cambio, USD, EUR, USDT, bolos, Venezuela",
+  authors: [{ name: "Calculadora Perse" }],
+  creator: "Calculadora Perse",
+  publisher: "Calculadora Perse",
   formatDetection: {
     email: false,
     address: false,
@@ -20,27 +20,27 @@ export const metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Calculadora BCV - Tipo de Cambio USD/EUR/USDT",
+    title: "Calculadora Perse - Tipo de Cambio USD/EUR/USDT",
     description:
-      "Calculadora para convertir USD, EUR y USDT a Bolívares usando la tasa oficial del BCV y Binance P2P",
+      "Calculadora para convertir USD, EUR y USDT a bolos usando PERSE y Binance P2P",
     url: "https://bcv-calculator.vercel.app",
-    siteName: "Calculadora BCV",
+    siteName: "Calculadora Perse",
     locale: "es_VE",
     type: "website",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Calculadora BCV",
-      },
-    ],
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: "Calculadora Perse",
+        },
+      ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Calculadora BCV - Tipo de Cambio USD/EUR/USDT",
+    title: "Calculadora Perse - Tipo de Cambio USD/EUR/USDT",
     description:
-      "Calculadora para convertir USD, EUR y USDT a Bolívares usando la tasa oficial del BCV y Binance P2P",
+      "Calculadora para convertir USD, EUR y USDT a bolos usando PERSE y Binance P2P",
     images: ["/og-image.png"],
   },
   robots: {
@@ -77,7 +77,7 @@ export const metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Calculadora BCV",
+    title: "Calculadora Perse",
     startupImage: "/apple-icon-180.png",
   },
 };
