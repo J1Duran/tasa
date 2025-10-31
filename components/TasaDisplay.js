@@ -6,6 +6,7 @@ export default function TasaDisplay({ onTasaChange }) {
   const [tasa, setTasa] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [copiado, setCopiado] = useState(false);
 
   const obtenerTasa = async () => {
     setLoading(true);
@@ -62,6 +63,25 @@ export default function TasaDisplay({ onTasaChange }) {
     return null;
   }
 
+  const copiarTasa = async () => {
+    try {
+      await navigator.clipboard.writeText(tasa.valor);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2000);
+    } catch (err) {
+      console.error("Error al copiar:", err);
+      // Fallback para navegadores antiguos
+      const textArea = document.createElement("textarea");
+      textArea.value = tasa.valor;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2000);
+    }
+  };
+
   const fecha = new Date(tasa.fecha);
   const fechaFormateada = fecha.toLocaleDateString("es-VE", {
     weekday: "long",
@@ -73,7 +93,16 @@ export default function TasaDisplay({ onTasaChange }) {
   return (
     <div className="tasa-display">
       <h2>Tipo de Cambio USD</h2>
-      <div className="tasa-valor">{tasa.valor} Bs</div>
+      <div className="tasa-valor-container">
+        <div className="tasa-valor">{tasa.valor} Bs</div>
+        <button
+          onClick={copiarTasa}
+          className="btn-copiar"
+          title="Copiar tasa"
+        >
+          {copiado ? "✓ Copiado" : "📋 Copiar"}
+        </button>
+      </div>
       <div className="tasa-fecha">{fechaFormateada}</div>
       <button
         onClick={obtenerTasa}
