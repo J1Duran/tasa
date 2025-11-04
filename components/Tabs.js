@@ -22,4 +22,3 @@ export default function Tabs({ activeTab, onTabChange }) {
     </div>
   );
 }
-

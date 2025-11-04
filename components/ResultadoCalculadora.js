@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default function ResultadoCalculadora({ resultado }) {
+export default function ResultadoCalculadora({ resultado, onViewRegistros }) {
   const [copiedUSDT, setCopiedUSDT] = useState(false);
   const [copiedBs, setCopiedBs] = useState(false);
   const [copiedTasa, setCopiedTasa] = useState(false);
@@ -155,6 +155,23 @@ export default function ResultadoCalculadora({ resultado }) {
           </div>
         </div>
       </div>
+
+      {/* CTA para ver registros */}
+      {onViewRegistros && (
+        <div style={{ marginTop: "1.5rem", textAlign: "center" }}>
+          <button
+            onClick={onViewRegistros}
+            className="btn btn-secondary"
+            style={{
+              backgroundColor: "var(--primary)",
+              color: "white",
+              border: "none",
+            }}
+          >
+            📊 Ver mis registros
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -5,6 +5,9 @@ import TasaDisplay from "@/components/TasaDisplay";
 import Resultado from "@/components/Resultado";
 import ResultadoCalculadora from "@/components/ResultadoCalculadora";
 import Tabs from "@/components/Tabs";
+import RegistrosUSDT from "@/components/RegistrosUSDT";
+import ModalRegistros from "@/components/ModalRegistros";
+import { guardarRegistro } from "@/lib/usdt-registros";
 
 export default function Home() {
   const [activeCurrency, setActiveCurrency] = useState("USD");
@@ -25,6 +28,9 @@ export default function Home() {
   const [precioCalc, setPrecioCalc] = useState("");
   const [calcResult, setCalcResult] = useState(null);
   const [calcLoading, setCalcLoading] = useState(false);
+  const [shouldRegister, setShouldRegister] = useState(false);
+  const [registerSuccess, setRegisterSuccess] = useState(false);
+  const [showRegistrosModal, setShowRegistrosModal] = useState(false);
 
   // Get current rate when loading or changing currency
   const getCurrentRate = async (currency) => {
@@ -184,6 +190,15 @@ export default function Home() {
         setCalcResult(data.data);
         setError(null);
         
+        // Guardar registro si el checkbox está marcado
+        if (shouldRegister) {
+          const guardado = guardarRegistro(data.data);
+          if (guardado) {
+            setRegisterSuccess(true);
+            setTimeout(() => setRegisterSuccess(false), 3000);
+          }
+        }
+        
         // Scroll to calculator results after a short delay to ensure DOM is updated
         setTimeout(() => {
           resultadoCalcRef.current?.scrollIntoView({ 
@@ -226,8 +241,42 @@ export default function Home() {
     <div className="container">
       <div className="card">
         <div className="header">
-          <h1>💰 Calculadora Perse (Personal)</h1>
-          <p>Convierte USD/EUR a bolos usando PERSE</p>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
+            <div>
+              <h1>💰 Calculadora Perse (Personal)</h1>
+              <p>Convierte USD/EUR a bolos usando PERSE</p>
+            </div>
+            <button
+              onClick={() => setShowRegistrosModal(true)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "0.5rem",
+                fontSize: "1.25rem",
+                background: "transparent",
+                border: "1px solid var(--border)",
+                borderRadius: "6px",
+                color: "var(--text-secondary)",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                marginTop: "0.25rem",
+                width: "36px",
+                height: "36px",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = "var(--background)";
+                e.target.style.borderColor = "var(--primary)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = "transparent";
+                e.target.style.borderColor = "var(--border)";
+              }}
+              title="Ver mis registros de consultas USDT"
+            >
+              📊
+            </button>
+          </div>
         </div>
 
         <Tabs activeTab={activeCurrency} onTabChange={setActiveCurrency} />
@@ -484,6 +533,61 @@ export default function Home() {
                 </div>
               )}
 
+              {registerSuccess && (
+                <div
+                  style={{
+                    padding: "0.75rem 1rem",
+                    backgroundColor: "#d4edda",
+                    color: "#155724",
+                    borderRadius: "8px",
+                    marginBottom: "1rem",
+                    border: "1px solid #c3e6cb",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                  }}
+                >
+                  <span>✓</span>
+                  <span>Consulta registrada correctamente</span>
+                </div>
+              )}
+
+              {/* Checkbox para registrar */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  marginBottom: "1rem",
+                  padding: "0.75rem",
+                  backgroundColor: "var(--background)",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  id="register-checkbox"
+                  checked={shouldRegister}
+                  onChange={(e) => setShouldRegister(e.target.checked)}
+                  style={{
+                    width: "18px",
+                    height: "18px",
+                    cursor: "pointer",
+                  }}
+                />
+                <label
+                  htmlFor="register-checkbox"
+                  style={{
+                    cursor: "pointer",
+                    userSelect: "none",
+                    flex: 1,
+                  }}
+                >
+                  📝 Registrar esta consulta
+                </label>
+              </div>
+
               <button
                 onClick={calculateUSDT}
                 className="btn btn-primary"
@@ -506,11 +610,22 @@ export default function Home() {
               )}
 
               <div ref={resultadoCalcRef}>
-                <ResultadoCalculadora resultado={calcResult} />
+                <ResultadoCalculadora 
+                  resultado={calcResult}
+                  onViewRegistros={() => setShowRegistrosModal(true)}
+                />
               </div>
             </div>
           </>
         )}
+
+        {/* Modal de registros */}
+        <ModalRegistros
+          isOpen={showRegistrosModal}
+          onClose={() => setShowRegistrosModal(false)}
+        >
+          <RegistrosUSDT onClose={() => setShowRegistrosModal(false)} />
+        </ModalRegistros>
       </div>
     </div>
   );
