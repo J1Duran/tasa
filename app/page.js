@@ -241,8 +241,14 @@ export default function Home() {
     <div className="container">
       <div className="card">
         <div className="header">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
-            <div>
+          <div style={{ 
+            display: "flex", 
+            justifyContent: "space-between", 
+            alignItems: "flex-start", 
+            gap: "1rem",
+            flexWrap: "nowrap",
+          }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <h1>💰 Calculadora Perse (Personal)</h1>
               <p>Convierte USD/EUR a bolos usando PERSE</p>
             </div>
@@ -263,6 +269,7 @@ export default function Home() {
                 marginTop: "0.25rem",
                 width: "36px",
                 height: "36px",
+                flexShrink: 0,
               }}
               onMouseEnter={(e) => {
                 e.target.style.backgroundColor = "var(--background)";
