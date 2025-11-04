@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import TasaDisplay from "@/components/TasaDisplay";
 import Resultado from "@/components/Resultado";
 import ResultadoCalculadora from "@/components/ResultadoCalculadora";
@@ -13,6 +13,12 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentRate, setCurrentRate] = useState(null);
+  // Toggle for USD tab: USD or Bs input mode
+  const [usdInputMode, setUsdInputMode] = useState("USD");
+  
+  // Ref for scrolling to results
+  const resultadoRef = useRef(null);
+  const resultadoCalcRef = useRef(null);
 
   // Calculator-specific state
   const [monedaCalc, setMonedaCalc] = useState("Bs");
@@ -39,6 +45,10 @@ export default function Home() {
       setResult(null);
       setInputAmounts("");
       setError(null);
+      // Reset input mode to USD when switching away from USD tab
+      if (activeCurrency !== "USD") {
+        setUsdInputMode("USD");
+      }
     } else {
       setResult(null);
       // Don't clear precioCalc here - it might have been set by onNavigateToCalculator
@@ -50,7 +60,8 @@ export default function Home() {
 
   const calculate = async () => {
     if (!inputAmounts.trim()) {
-      setError(`Por favor ingresa al menos una cantidad en ${activeCurrency}`);
+      const currencyLabel = activeCurrency === "USD" && usdInputMode === "Bs" ? "bolos" : activeCurrency;
+      setError(`Por favor ingresa al menos una cantidad en ${currencyLabel}`);
       return;
     }
 
@@ -77,6 +88,19 @@ export default function Home() {
         return;
       }
 
+      // If input mode is Bs (for USD tab), we need to divide by rate to get USD equivalent
+      // and then the API will multiply by rate to get back to Bs
+      // Actually, we need a different approach: calculate USD from Bs input
+      let processedAmounts = amounts;
+      let processedMoneda = activeCurrency;
+      
+      if (activeCurrency === "USD" && usdInputMode === "Bs") {
+        // Convert Bs amounts to USD by dividing by rate
+        processedAmounts = amounts.map(amount => amount / currentRate.tasa);
+        // Keep moneda as USD so the API calculates correctly
+        processedMoneda = "USD";
+      }
+
       // Call calculation API
       const response = await fetch("/api/calcular", {
         method: "POST",
@@ -84,17 +108,43 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          cantidades: amounts,
+          cantidades: processedAmounts,
           tasa: currentRate.tasa,
-          moneda: activeCurrency,
+          moneda: processedMoneda,
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        setResult(data.data);
+        // If input was in Bs, we need to adjust the result to show the USD equivalent
+        if (activeCurrency === "USD" && usdInputMode === "Bs") {
+          // The result.totalBolivares is the same as the input (sum of Bs amounts)
+          // But we need to show the USD equivalent in sumaMoneda
+          const totalBs = amounts.reduce((sum, val) => sum + val, 0);
+          const totalUsd = totalBs / currentRate.tasa;
+          setResult({
+            ...data.data,
+            sumaMoneda: totalUsd,
+            moneda: "USD",
+            totalBolivares: totalBs,
+            // Save original Bs amounts for display
+            cantidadesOriginales: amounts,
+            // Mark that input was in Bs
+            inputMode: "Bs",
+          });
+        } else {
+          setResult(data.data);
+        }
         setError(null);
+        
+        // Scroll to results after a short delay to ensure DOM is updated
+        setTimeout(() => {
+          resultadoRef.current?.scrollIntoView({ 
+            behavior: "smooth", 
+            block: "start" 
+          });
+        }, 100);
       } else {
         setError(data.error || "Error al calcular");
       }
@@ -133,6 +183,14 @@ export default function Home() {
       if (data.success) {
         setCalcResult(data.data);
         setError(null);
+        
+        // Scroll to calculator results after a short delay to ensure DOM is updated
+        setTimeout(() => {
+          resultadoCalcRef.current?.scrollIntoView({ 
+            behavior: "smooth", 
+            block: "start" 
+          });
+        }, 100);
       } else {
         setError(data.error || "Error al calcular");
       }
@@ -178,19 +236,104 @@ export default function Home() {
           <>
             <TasaDisplay moneda={activeCurrency} onTasaChange={setCurrentRate} />
 
+            {/* Toggle for USD tab only */}
+            {activeCurrency === "USD" && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: "0.5rem",
+                  marginBottom: "1rem",
+                  borderBottom: "2px solid var(--border)",
+                  paddingBottom: "0.5rem",
+                }}
+              >
+                <button
+                  onClick={() => {
+                    setUsdInputMode("USD");
+                    setInputAmounts("");
+                    setResult(null);
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: "0.75rem 1rem",
+                    fontSize: "1rem",
+                    fontWeight: 600,
+                    border: "none",
+                    background:
+                      usdInputMode === "USD"
+                        ? "var(--background)"
+                        : "transparent",
+                    color:
+                      usdInputMode === "USD"
+                        ? "var(--primary)"
+                        : "var(--text-secondary)",
+                    cursor: "pointer",
+                    borderRadius: "8px 8px 0 0",
+                    transition: "all 0.2s",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.5rem",
+                  }}
+                >
+                  💵 USD
+                </button>
+                <button
+                  onClick={() => {
+                    setUsdInputMode("Bs");
+                    setInputAmounts("");
+                    setResult(null);
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: "0.75rem 1rem",
+                    fontSize: "1rem",
+                    fontWeight: 600,
+                    border: "none",
+                    background:
+                      usdInputMode === "Bs"
+                        ? "var(--background)"
+                        : "transparent",
+                    color:
+                      usdInputMode === "Bs"
+                        ? "var(--primary)"
+                        : "var(--text-secondary)",
+                    cursor: "pointer",
+                    borderRadius: "8px 8px 0 0",
+                    transition: "all 0.2s",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.5rem",
+                  }}
+                >
+                  💰 bolos
+                </button>
+              </div>
+            )}
+
             <div className="input-group">
               <label htmlFor="cantidades">
                 {activeCurrency === "EUR"
                   ? "€"
                   : activeCurrency === "USDT"
                   ? "₮"
+                  : activeCurrency === "USD" && usdInputMode === "Bs"
+                  ? "💰"
                   : "💵"}{" "}
-                Cantidades en {activeCurrency}
+                Cantidades en{" "}
+                {activeCurrency === "USD" && usdInputMode === "Bs"
+                  ? "bolos"
+                  : activeCurrency}
               </label>
               <input
                 id="cantidades"
                 type="text"
-                placeholder={`Ej: 100, 20, 40 o 100 20 40 (en ${activeCurrency})`}
+                placeholder={
+                  activeCurrency === "USD" && usdInputMode === "Bs"
+                    ? "Ej: 10000, 20000, 40000 o 10000 20000 40000 (en bolos)"
+                    : `Ej: 100, 20, 40 o 100 20 40 (en ${activeCurrency})`
+                }
                 value={inputAmounts}
                 onChange={(e) => setInputAmounts(e.target.value)}
                 onKeyPress={(e) => {
@@ -232,22 +375,24 @@ export default function Home() {
               </button>
             )}
 
-            <Resultado 
-              resultado={result} 
-              moneda={activeCurrency}
-              onNavigateToCalculator={(monto) => {
-                setActiveCurrency("CALC");
-                setMonedaCalc("Bs");
-                // Format number properly: use Spanish format and remove thousand separators
-                const formatted = new Intl.NumberFormat("es-VE", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                }).format(monto);
-                // Remove dots (thousand separators), keep comma (decimal)
-                const formattedMonto = formatted.replace(/\./g, "");
-                setPrecioCalc(formattedMonto);
-              }}
-            />
+            <div ref={resultadoRef}>
+              <Resultado 
+                resultado={result} 
+                moneda={activeCurrency}
+                onNavigateToCalculator={(monto) => {
+                  setActiveCurrency("CALC");
+                  setMonedaCalc("Bs");
+                  // Format number properly: use Spanish format and remove thousand separators
+                  const formatted = new Intl.NumberFormat("es-VE", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }).format(monto);
+                  // Remove dots (thousand separators), keep comma (decimal)
+                  const formattedMonto = formatted.replace(/\./g, "");
+                  setPrecioCalc(formattedMonto);
+                }}
+              />
+            </div>
           </>
         )}
 
@@ -360,7 +505,9 @@ export default function Home() {
                 </button>
               )}
 
-              <ResultadoCalculadora resultado={calcResult} />
+              <div ref={resultadoCalcRef}>
+                <ResultadoCalculadora resultado={calcResult} />
+              </div>
             </div>
           </>
         )}

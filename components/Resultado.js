@@ -51,11 +51,14 @@ export default function Resultado({
           <strong style={{ display: "block", marginBottom: "0.5rem" }}>
             Cantidades ingresadas:
           </strong>
-          {resultado.cantidades.map((amount, index) => (
+          {(resultado.cantidadesOriginales || resultado.cantidades).map((amount, index) => (
             <div key={index} className="cantidad-item">
               <span>{index + 1}.</span>
               <span>
-                {formatNumber(amount)} {resultado.moneda || "USD"}
+                {formatNumber(amount)}{" "}
+                {resultado.inputMode === "Bs"
+                  ? "bolos"
+                  : resultado.moneda || "USD"}
               </span>
             </div>
           ))}
