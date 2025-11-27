@@ -54,19 +54,22 @@ export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
   };
 
   // Calculate savings percentage
+  // Porcentaje de ganancia por cada USDT con respecto al USD BCV
   const calculateSavingsPercentage = (tasaBCV, tasaUSDT) => {
     if (!tasaBCV || !tasaUSDT || tasaBCV <= 0 || tasaUSDT <= 0) {
       return null;
     }
 
-    // Use tasaVenta from USDT (what you receive when selling)
-    // Si USDT está por encima de BCV, significa que recibes MÁS bolos con USDT
-    // Calcular: cuánto MÁS recibes con USDT comparado con BCV
-    // Porcentaje = ((tasaUSDT - tasaBCV) / tasaBCV) * 100
-    const diferencia = tasaUSDT - tasaBCV;
-    const porcentaje = (diferencia / tasaBCV) * 100;
+    // Calcular: porcentaje de ganancia al vender USDT vs vender USD a tasa BCV
+    // Si vendes 1 USDT recibes tasaUSDT bolos
+    // Si vendes 1 USD a BCV recibes tasaBCV bolos
+    // Ganancia = tasaUSDT - tasaBCV
+    // Porcentaje de ganancia sobre el precio de venta = (ganancia / tasaUSDT) * 100
+    // Esto muestra qué porcentaje del precio de venta es ganancia adicional vs BCV
+    const ganancia = tasaUSDT - tasaBCV;
+    const porcentaje = (ganancia / tasaUSDT) * 100;
 
-    // Retornar valor positivo (siempre será positivo si USDT > BCV)
+    // Retornar valor positivo
     return parseFloat(Math.abs(porcentaje).toFixed(2));
   };
 
@@ -166,31 +169,36 @@ export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
           {copied ? "✓" : "📋"}
         </button>
         {/* Indicador de porcentaje de diferencia vs BCV */}
-        {moneda === "USDT" && savingsPercentage !== null && (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "0.5rem 0.75rem",
-              background: "rgba(255, 255, 255, 0.2)",
-              border: "1px solid rgba(255, 255, 255, 0.3)",
-              borderRadius: "6px",
-              minWidth: "80px",
-            }}
-          >
-            <span
+        {moneda === "USDT" &&
+          savingsPercentage !== null &&
+          savingsPercentage !== undefined && (
+            <div
               style={{
-                fontSize: "1.25rem",
-                fontWeight: 700,
-                color: "white",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "0.5rem 0.75rem",
+                background: "rgba(255, 255, 255, 0.2)",
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+                borderRadius: "6px",
+                minWidth: "80px",
               }}
             >
-              {savingsPercentage.toFixed(2)}%
-            </span>
-          </div>
-        )}
+              <span
+                style={{
+                  fontSize: "1.25rem",
+                  fontWeight: 700,
+                  color: "white",
+                }}
+              >
+                {typeof savingsPercentage === "number"
+                  ? savingsPercentage.toFixed(2)
+                  : "0.00"}
+                %
+              </span>
+            </div>
+          )}
       </div>
 
       {/* Show buy and sell rates for USDT (reference only) */}
