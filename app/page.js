@@ -107,6 +107,11 @@ export default function Home() {
         processedMoneda = "USD";
       }
 
+      // For USDT, use sell rate (tasaVenta) instead of average (tasa)
+      const tasaToUse = activeCurrency === "USDT" && currentRate.tasaVenta
+        ? currentRate.tasaVenta
+        : currentRate.tasa;
+
       // Call calculation API
       const response = await fetch("/api/calcular", {
         method: "POST",
@@ -115,7 +120,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           cantidades: processedAmounts,
-          tasa: currentRate.tasa,
+          tasa: tasaToUse,
           moneda: processedMoneda,
         }),
       });

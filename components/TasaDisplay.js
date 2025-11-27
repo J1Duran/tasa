@@ -118,6 +118,7 @@ export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
   }
 
   const copyRate = async () => {
+    // Always use average (valor) for copying
     // Format for clipboard: replace dots with nothing, keep comma for decimals
     const copyValue = rate.valor.replace(/\./g, "");
 
