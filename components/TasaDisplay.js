@@ -7,6 +7,8 @@ export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [bcvRate, setBcvRate] = useState(null);
+  const [savingsPercentage, setSavingsPercentage] = useState(null);
 
   const getRate = async () => {
     setLoading(true);
@@ -30,10 +32,59 @@ export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
     }
   };
 
+  // Get BCV rate when USDT tab is active
+  const getBCVRate = async () => {
+    if (moneda !== "USDT") {
+      setBcvRate(null);
+      setSavingsPercentage(null);
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/tasa?moneda=USD");
+      const data = await response.json();
+
+      if (data.success && data.data.tasa) {
+        setBcvRate(data.data.tasa);
+      }
+    } catch (err) {
+      console.error("Error obteniendo tasa BCV:", err);
+      setBcvRate(null);
+    }
+  };
+
+  // Calculate savings percentage
+  const calculateSavingsPercentage = (tasaBCV, tasaUSDT) => {
+    if (!tasaBCV || !tasaUSDT || tasaBCV <= 0 || tasaUSDT <= 0) {
+      return null;
+    }
+
+    // Use tasaVenta from USDT (what you receive when selling)
+    // Si USDT está por encima de BCV, significa que recibes MÁS bolos con USDT
+    // Calcular: cuánto MÁS recibes con USDT comparado con BCV
+    // Porcentaje = ((tasaUSDT - tasaBCV) / tasaBCV) * 100
+    const diferencia = tasaUSDT - tasaBCV;
+    const porcentaje = (diferencia / tasaBCV) * 100;
+
+    // Retornar valor positivo (siempre será positivo si USDT > BCV)
+    return parseFloat(Math.abs(porcentaje).toFixed(2));
+  };
+
   useEffect(() => {
     getRate();
+    getBCVRate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moneda]);
+
+  // Calculate percentage when rates change
+  useEffect(() => {
+    if (moneda === "USDT" && rate && bcvRate && rate.tasaVenta) {
+      const percentage = calculateSavingsPercentage(bcvRate, rate.tasaVenta);
+      setSavingsPercentage(percentage);
+    } else {
+      setSavingsPercentage(null);
+    }
+  }, [moneda, rate, bcvRate]);
 
   if (loading) {
     return (
@@ -66,7 +117,7 @@ export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
   const copyRate = async () => {
     // Format for clipboard: replace dots with nothing, keep comma for decimals
     const copyValue = rate.valor.replace(/\./g, "");
-    
+
     try {
       await navigator.clipboard.writeText(copyValue);
       setCopied(true);
@@ -114,6 +165,32 @@ export default function TasaDisplay({ moneda = "USD", onTasaChange }) {
         <button onClick={copyRate} className="btn-copiar" title="Copiar tasa">
           {copied ? "✓" : "📋"}
         </button>
+        {/* Indicador de porcentaje de diferencia vs BCV */}
+        {moneda === "USDT" && savingsPercentage !== null && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "0.5rem 0.75rem",
+              background: "rgba(255, 255, 255, 0.2)",
+              border: "1px solid rgba(255, 255, 255, 0.3)",
+              borderRadius: "6px",
+              minWidth: "80px",
+            }}
+          >
+            <span
+              style={{
+                fontSize: "1.25rem",
+                fontWeight: 700,
+                color: "white",
+              }}
+            >
+              {savingsPercentage.toFixed(2)}%
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Show buy and sell rates for USDT (reference only) */}
