@@ -14,6 +14,8 @@ export default function AdminDashboard() {
   const [itemsPerPage, setItemsPerPage] = useState(50);
   const [maintenanceStatus, setMaintenanceStatus] = useState(null);
   const [maintenanceLoading, setMaintenanceLoading] = useState(false);
+  const [whatsappLinkInput, setWhatsappLinkInput] = useState("");
+  const [showWhatsappInput, setShowWhatsappInput] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -87,6 +89,7 @@ export default function AdminDashboard() {
       if (maintenanceResponse.ok) {
         const maintenanceData = await maintenanceResponse.json();
         setMaintenanceStatus(maintenanceData.data);
+        setWhatsappLinkInput(maintenanceData.data.whatsappLink || "");
       }
     } catch (err) {
       setError("Error al cargar datos");
@@ -113,17 +116,53 @@ export default function AdminDashboard() {
         },
         body: JSON.stringify({
           active: newStatus,
+          whatsappLink: whatsappLinkInput || undefined,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
         setMaintenanceStatus(data.data);
+        setWhatsappLinkInput(data.data.whatsappLink || "");
       } else {
         setError("Error al actualizar el estado de mantenimiento");
       }
     } catch (err) {
       setError("Error al actualizar el estado de mantenimiento");
+    } finally {
+      setMaintenanceLoading(false);
+    }
+  };
+
+  const handleWhatsappLinkSave = async () => {
+    const token = localStorage.getItem("admin_token");
+    if (!token) return;
+
+    setMaintenanceLoading(true);
+    try {
+      const response = await fetch("/api/admin/maintenance", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          active: maintenanceStatus?.active || false,
+          whatsappLink: whatsappLinkInput,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMaintenanceStatus(data.data);
+        setWhatsappLinkInput(data.data.whatsappLink || "");
+        setError(null);
+        alert("Link de WhatsApp guardado correctamente");
+      } else {
+        setError("Error al guardar el link de WhatsApp");
+      }
+    } catch (err) {
+      setError("Error al guardar el link de WhatsApp");
     } finally {
       setMaintenanceLoading(false);
     }
@@ -315,20 +354,79 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </div>
-            {maintenanceStatus?.whatsappLink && (
+            <div
+              style={{
+                marginTop: "1rem",
+                padding: "1rem",
+                background: "white",
+                borderRadius: "6px",
+                fontSize: "0.875rem",
+              }}
+            >
               <div
                 style={{
-                  marginTop: "1rem",
-                  padding: "0.75rem",
-                  background: "white",
-                  borderRadius: "6px",
-                  fontSize: "0.875rem",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: showWhatsappInput ? "0.75rem" : "0",
                 }}
               >
-                <strong>Link de WhatsApp:</strong>{" "}
-                <code style={{ color: "#3b82f6" }}>{maintenanceStatus.whatsappLink}</code>
+                <div>
+                  <strong>Link de WhatsApp:</strong>{" "}
+                  {maintenanceStatus?.whatsappLink ? (
+                    <code style={{ color: "#3b82f6" }}>{maintenanceStatus.whatsappLink}</code>
+                  ) : (
+                    <span style={{ color: "#ef4444" }}>No configurado</span>
+                  )}
+                </div>
+                <button
+                  onClick={() => {
+                    setShowWhatsappInput(!showWhatsappInput);
+                    if (!showWhatsappInput) {
+                      setWhatsappLinkInput(maintenanceStatus?.whatsappLink || "");
+                    }
+                  }}
+                  className="btn btn-secondary"
+                  style={{
+                    padding: "0.5rem 1rem",
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  {showWhatsappInput ? "Cancelar" : "Editar"}
+                </button>
               </div>
-            )}
+              {showWhatsappInput && (
+                <div style={{ display: "flex", gap: "0.5rem", flexDirection: "column" }}>
+                  <input
+                    type="text"
+                    value={whatsappLinkInput}
+                    onChange={(e) => setWhatsappLinkInput(e.target.value)}
+                    placeholder="https://wa.me/584123456789"
+                    style={{
+                      padding: "0.75rem",
+                      borderRadius: "6px",
+                      border: "1px solid var(--border)",
+                      fontSize: "0.875rem",
+                      width: "100%",
+                    }}
+                  />
+                  <button
+                    onClick={handleWhatsappLinkSave}
+                    disabled={maintenanceLoading}
+                    className="btn btn-primary"
+                    style={{
+                      padding: "0.75rem",
+                      fontSize: "0.875rem",
+                    }}
+                  >
+                    {maintenanceLoading ? "Guardando..." : "Guardar Link"}
+                  </button>
+                  <p style={{ fontSize: "0.75rem", color: "#64748b", margin: "0.5rem 0 0 0" }}>
+                    Formato: https://wa.me/[NÚMERO] (ej: https://wa.me/584123456789)
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

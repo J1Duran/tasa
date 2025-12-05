@@ -1,30 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 export default function MaintenancePage() {
   const [whatsappLink, setWhatsappLink] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Get WhatsApp link from API (public endpoint)
     fetch("/api/maintenance")
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && data.data.whatsappLink) {
-          setWhatsappLink(data.data.whatsappLink);
+        if (data.success && data.data) {
+          const link = data.data.whatsappLink || "";
+          setWhatsappLink(link);
         }
       })
-      .catch(() => {
-        // Fallback: try environment variable
+      .catch((err) => {
+        console.error("Error loading WhatsApp link:", err);
+        // Fallback: try environment variable (only works if set at build time)
         const envLink = process.env.NEXT_PUBLIC_WHATSAPP_LINK || "";
         setWhatsappLink(envLink);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, []);
 
-  const defaultMessage = "Hola, quiero comunicarme contigo";
+  const defaultMessage = "Hola comunicate con soporte por whatsapp";
   const whatsappUrl = whatsappLink
-    ? `${whatsappLink}${whatsappLink.includes("?") ? "&" : "?"}text=${encodeURIComponent(defaultMessage)}`
+    ? `${whatsappLink}${
+        whatsappLink.includes("?") ? "&" : "?"
+      }text=${encodeURIComponent(defaultMessage)}`
     : "#";
 
   return (
@@ -91,8 +99,8 @@ export default function MaintenancePage() {
           </div>
         </div>
 
-        {whatsappLink && (
-          <div className="contact-section">
+        <div className="contact-section">
+          {whatsappLink ? (
             <a
               href={whatsappUrl}
               target="_blank"
@@ -102,11 +110,25 @@ export default function MaintenancePage() {
               <span className="whatsapp-icon">💬</span>
               <span>Contáctanos por WhatsApp</span>
             </a>
-            <p className="contact-hint">
-              Si necesitas comunicarte con nosotros, haz clic en el botón de arriba
-            </p>
-          </div>
-        )}
+          ) : (
+            <div
+              className="whatsapp-button"
+              style={{
+                opacity: 0.6,
+                cursor: "not-allowed",
+                pointerEvents: "none",
+              }}
+            >
+              <span className="whatsapp-icon">💬</span>
+              <span>Contáctanos por WhatsApp</span>
+            </div>
+          )}
+          <p className="contact-hint">
+            {whatsappLink
+              ? "Si necesitas comunicarte con nosotros, haz clic en el botón de arriba"
+              : "Link de WhatsApp no configurado. Configúralo desde el panel de administración o mediante la variable de entorno WHATSAPP_LINK."}
+          </p>
+        </div>
 
         <div className="maintenance-footer">
           <p className="footer-text">
@@ -310,6 +332,7 @@ export default function MaintenancePage() {
           flex-direction: column;
           align-items: center;
           gap: 1rem;
+          width: 100%;
         }
 
         .qr-wrapper {
@@ -320,12 +343,18 @@ export default function MaintenancePage() {
           display: flex;
           align-items: center;
           justify-content: center;
+          width: 100%;
+          max-width: 300px;
+          box-sizing: border-box;
         }
 
         .qr-image {
           border-radius: 8px;
-          max-width: 100%;
+          width: 100%;
           height: auto;
+          max-width: 100%;
+          display: block;
+          object-fit: contain;
         }
 
         .qr-hint {
@@ -388,8 +417,12 @@ export default function MaintenancePage() {
         }
 
         @media (max-width: 640px) {
+          .maintenance-container {
+            padding: 1rem;
+          }
+
           .maintenance-card {
-            padding: 2rem 1.5rem;
+            padding: 1.5rem 1rem;
           }
 
           .maintenance-title {
@@ -397,19 +430,43 @@ export default function MaintenancePage() {
           }
 
           .payment-card {
-            padding: 1.5rem;
+            padding: 1rem;
           }
 
           .binance-id-code {
             font-size: 1.25rem;
           }
 
+          .binance-id {
+            padding: 0.75rem 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+          }
+
           .qr-wrapper {
             padding: 1rem;
+            max-width: 100%;
+          }
+
+          .qr-image {
+            width: 100%;
+            max-width: 250px;
+          }
+
+          .qr-hint {
+            max-width: 100%;
+            padding: 0 1rem;
+          }
+
+          .whatsapp-button {
+            padding: 0.875rem 1.5rem;
+            font-size: 1rem;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
           }
         }
       `}</style>
     </div>
   );
 }
-
