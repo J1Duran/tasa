@@ -12,6 +12,8 @@ export default function AdminDashboard() {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(50);
+  const [maintenanceStatus, setMaintenanceStatus] = useState(null);
+  const [maintenanceLoading, setMaintenanceLoading] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -74,6 +76,18 @@ export default function AdminDashboard() {
         const statsData = await statsResponse.json();
         setStats(statsData.data);
       }
+
+      // Fetch maintenance status
+      const maintenanceResponse = await fetch("/api/admin/maintenance", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (maintenanceResponse.ok) {
+        const maintenanceData = await maintenanceResponse.json();
+        setMaintenanceStatus(maintenanceData.data);
+      }
     } catch (err) {
       setError("Error al cargar datos");
     }
@@ -82,6 +96,37 @@ export default function AdminDashboard() {
   const handleLogout = () => {
     localStorage.removeItem("admin_token");
     router.push("/admin");
+  };
+
+  const handleMaintenanceToggle = async () => {
+    const token = localStorage.getItem("admin_token");
+    if (!token) return;
+
+    setMaintenanceLoading(true);
+    try {
+      const newStatus = !maintenanceStatus?.active;
+      const response = await fetch("/api/admin/maintenance", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          active: newStatus,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMaintenanceStatus(data.data);
+      } else {
+        setError("Error al actualizar el estado de mantenimiento");
+      }
+    } catch (err) {
+      setError("Error al actualizar el estado de mantenimiento");
+    } finally {
+      setMaintenanceLoading(false);
+    }
   };
 
   const formatDate = (dateString) => {
@@ -196,6 +241,94 @@ export default function AdminDashboard() {
                   </div>
                 );
               })}
+          </div>
+        </div>
+
+        {/* Maintenance Control */}
+        <div style={{ marginTop: "2rem" }}>
+          <h2 style={{ marginBottom: "1rem", fontSize: "1.5rem" }}>
+            🔧 Control de Mantenimiento
+          </h2>
+          <div
+            style={{
+              padding: "1.5rem",
+              borderRadius: "8px",
+              border: `2px solid ${maintenanceStatus?.active ? "#f59e0b" : "#64748b"}`,
+              background: maintenanceStatus?.active ? "#fffbeb" : "#f8fafc",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "1rem",
+              }}
+            >
+              <div>
+                <h3 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: "0.5rem" }}>
+                  Estado de Mantenimiento
+                </h3>
+                <p style={{ fontSize: "0.875rem", color: "#64748b" }}>
+                  {maintenanceStatus?.active
+                    ? "El sitio está actualmente en modo mantenimiento. Los usuarios serán redirigidos a la página de mantenimiento."
+                    : "El sitio está activo y accesible para todos los usuarios."}
+                </p>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "1.5rem",
+                    fontWeight: 700,
+                    color: maintenanceStatus?.active ? "#f59e0b" : "#64748b",
+                  }}
+                >
+                  {maintenanceStatus?.active ? "🔒 Activo" : "✅ Inactivo"}
+                </span>
+                <button
+                  onClick={handleMaintenanceToggle}
+                  disabled={maintenanceLoading || maintenanceStatus === null}
+                  className="btn"
+                  style={{
+                    background: maintenanceStatus?.active ? "#ef4444" : "#10b981",
+                    color: "white",
+                    border: "none",
+                    padding: "0.75rem 1.5rem",
+                    borderRadius: "8px",
+                    cursor: maintenanceLoading || maintenanceStatus === null ? "not-allowed" : "pointer",
+                    opacity: maintenanceLoading || maintenanceStatus === null ? 0.6 : 1,
+                    fontWeight: 600,
+                  }}
+                >
+                  {maintenanceLoading
+                    ? "Cargando..."
+                    : maintenanceStatus?.active
+                    ? "Desactivar Mantenimiento"
+                    : "Activar Mantenimiento"}
+                </button>
+              </div>
+            </div>
+            {maintenanceStatus?.whatsappLink && (
+              <div
+                style={{
+                  marginTop: "1rem",
+                  padding: "0.75rem",
+                  background: "white",
+                  borderRadius: "6px",
+                  fontSize: "0.875rem",
+                }}
+              >
+                <strong>Link de WhatsApp:</strong>{" "}
+                <code style={{ color: "#3b82f6" }}>{maintenanceStatus.whatsappLink}</code>
+              </div>
+            )}
           </div>
         </div>
 
